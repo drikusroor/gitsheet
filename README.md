@@ -22,6 +22,26 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## GitHub Personal Access Token (PAT) Permissions
+
+To use Gitsheet, you need to create a GitHub Personal Access Token (PAT) with the following permissions:
+- `repo`: Full control of private repositories (to read and write files, and create pull requests)
+- `workflow`: Update GitHub Action workflows (if you plan to trigger workflows)
+- `user`: Read and write user profile data (optional, if you need to access user information)
+- `commit statuses`: Read and write
+- `contents`: Read and write
+- `metadata`: Read-only
+- `pull requests`: Read and write
+
+Store the PAT in the `.env.local` file as shown below:
+
+```env
+GITHUB_TOKEN=your_github_pat
+GITHUB_OWNER=your_github_username
+GITHUB_REPO=your_repository_name
+GITHUB_PATH=path/to/your/csvfile.csv
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
