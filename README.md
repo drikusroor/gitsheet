@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gitsheet
+
+Gitsheet is a web application that allows you to edit CSV files in a GitHub repository through a user-friendly interface. It acts as a proxy for users who are not familiar with GitHub or do not have GitHub accounts.
 
 ## Getting Started
 
