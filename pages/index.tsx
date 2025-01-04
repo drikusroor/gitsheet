@@ -39,9 +39,9 @@ export default function Home({ csvData }) {
 export async function getServerSideProps() {
   // 1. Prepare the GitHub API endpoint for your CSV file
   //    Example: /repos/{OWNER}/{REPO}/contents/path/to/data.csv
-  const owner = 'YOUR_GITHUB_USERNAME';
-  const repo = 'YOUR_REPO';
-  const path = 'path/to/data.csv';
+  const owner = process.env.GITHUB_USERNAME;
+  const repo = process.env.GITHUB_REPO;
+  const path = process.env.GITHUB_PATH;
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
 
   try {
