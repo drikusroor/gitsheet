@@ -1,22 +1,26 @@
 // pages/prs/index.js
 import React from 'react';
 import { Octokit } from '@octokit/rest';
+import '@/styles/globals.css';
 
 export default function PrList({ openPRs }) {
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Open Pull Requests</h1>
-      {openPRs.length === 0 && <p>No open PRs found.</p>}
+    <div className="container mx-auto px-6 py-8">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Open Pull Requests</h1>
+      {openPRs.length === 0 && <p className="text-gray-600">No open PRs found.</p>}
 
-      <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+      <ul className="space-y-4">
         {openPRs.map((pr) => (
-          <li key={pr.number} style={{ margin: '1rem 0' }}>
-            <a href={`/prs/${pr.number}`}>
-              <strong>#{pr.number}</strong> {pr.title}
+          <li key={pr.number} className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+            <a href={`/prs/${pr.number}`} className="block">
+              <div className="flex items-center space-x-2">
+                <span className="text-blue-500 font-mono">#{pr.number}</span>
+                <span className="font-medium text-gray-800">{pr.title}</span>
+              </div>
+              <div className="mt-2 text-sm text-gray-600">
+                by {pr.user.login}
+              </div>
             </a>
-            <div style={{ fontSize: '0.9rem', color: '#666' }}>
-              by {pr.user.login}  
-            </div>
           </li>
         ))}
       </ul>

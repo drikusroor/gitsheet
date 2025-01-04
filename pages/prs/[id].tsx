@@ -1,44 +1,40 @@
 // pages/prs/[id].js
 import React from 'react';
 import { Octokit } from '@octokit/rest';
+import '@/styles/globals.css';
 
 export default function PrDetails({ prNumber, prData, files }) {
   if (!prData) {
     return (
-      <div style={{ padding: '2rem' }}>
-        <h1>Pull Request #{prNumber}</h1>
-        <p>Not found or error fetching.</p>
+      <div className="container mx-auto px-6 py-8">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">Pull Request #{prNumber}</h1>
+        <p className="text-gray-600">Not found or error fetching.</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Pull Request #{prData.number}</h1>
-      <h2>{prData.title}</h2>
-      <p>by {prData.user?.login}</p>
-      <p>{prData.body}</p>
+    <div className="container mx-auto px-6 py-8">
+      <h1 className="text-3xl font-bold mb-2 text-gray-800">Pull Request #{prData.number}</h1>
+      <h2 className="text-xl font-semibold mb-2 text-gray-700">{prData.title}</h2>
+      <p className="text-gray-600 mb-4">by {prData.user?.login}</p>
+      <p className="text-gray-800 mb-8">{prData.body}</p>
 
-      <hr />
-      <h2>Changed Files</h2>
-      {files.map((file) => (
-        <div key={file.filename} style={{ marginBottom: '2rem' }}>
-          <h3>{file.filename}</h3>
-          {file.patch ? (
-            <pre
-              style={{
-                background: '#f4f4f4',
-                padding: '1rem',
-                overflowX: 'auto',
-              }}
-            >
-              {file.patch}
-            </pre>
-          ) : (
-            <p>No patch info (binary or something else).</p>
-          )}
-        </div>
-      ))}
+      <div className="border-t border-gray-200 pt-6">
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Changed Files</h2>
+        {files.map((file) => (
+          <div key={file.filename} className="mb-6">
+            <h3 className="text-lg font-medium mb-2 text-gray-700">{file.filename}</h3>
+            {file.patch ? (
+              <pre className="bg-gray-50 rounded-lg p-4 overflow-x-auto text-sm">
+                {file.patch}
+              </pre>
+            ) : (
+              <p className="text-gray-600">No patch info (binary or something else).</p>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
