@@ -1,88 +1,126 @@
-import React from 'react';
+// pages/index.js
+import React, { useState } from 'react';
 import Papa from 'papaparse';
 
-// We'll fetch a CSV from a GitHub repo. Let's say it's at
-// https://github.com/{owner}/{repo}/contents/path/to/data.csv
-// We'll use the GitHub "Contents API" endpoint.
+export default function Home({ initialCsvData, initialCsvRaw }) {
+  // initialCsvData is array of objects from Papa.parse
+  // initialCsvRaw is the raw CSV text from GitHub (used if we need the original for diff or something else)
 
-export default function Home({ csvData }) {
+  const [tableData, setTableData] = useState(initialCsvData);
+
+  // Handler for editing a cell
+  const handleCellChange = (rowIndex, key, newValue) => {
+    setTableData((prevData) => {
+      const newData = [...prevData];
+      newData[rowIndex] = { ...newData[rowIndex], [key]: newValue };
+      return newData;
+    });
+  };
+
+  // Convert our tableData (array of objects) back to CSV
+  const generateCsvText = () => {
+    const unparseConfig = { header: true };
+    return Papa.unparse(tableData, unparseConfig);
+  };
+
+  // Submit changes to create a PR
+  const submitChanges = async () => {
+    try {
+      const updatedCsvText = generateCsvText();
+      const response = await fetch('/api/createPr', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ updatedCsvText }),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        alert(`PR created: ${result.pullRequestUrl}`);
+      } else {
+        alert(`Error creating PR: ${result.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create PR. See console for details.');
+    }
+  };
+
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>CSV Viewer</h1>
-      {csvData && csvData.length > 0 ? (
-        <table border="1" cellPadding="6" style={{ borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              {Object.keys(csvData[0]).map((header) => (
+      <h1>Editable CSV Table</h1>
+      <table
+        border="1"
+        cellPadding="6"
+        style={{ borderCollapse: 'collapse', marginBottom: '1rem' }}
+      >
+        <thead>
+          <tr>
+            {/* Render table headers from the keys of the first row */}
+            {tableData[0] &&
+              Object.keys(tableData[0]).map((header) => (
                 <th key={header}>{header}</th>
               ))}
+          </tr>
+        </thead>
+        <tbody>
+          {tableData.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {Object.keys(row).map((key) => (
+                <td key={key}>
+                  <input
+                    style={{ width: '100%' }}
+                    value={row[key] || ''}
+                    onChange={(e) => handleCellChange(rowIndex, key, e.target.value)}
+                  />
+                </td>
+              ))}
             </tr>
-          </thead>
-          <tbody>
-            {csvData.map((row, idx) => (
-              <tr key={idx}>
-                {Object.keys(row).map((key) => (
-                  <td key={key}>{row[key]}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No data found.</p>
-      )}
+          ))}
+        </tbody>
+      </table>
+
+      <button onClick={submitChanges}>
+        Submit changes (create PR)
+      </button>
     </div>
   );
 }
 
-// This function runs on the server for every request (unless using Next.js caching).
 export async function getServerSideProps() {
-  // 1. Prepare the GitHub API endpoint for your CSV file
-  //    Example: /repos/{OWNER}/{REPO}/contents/path/to/data.csv
-  const owner = process.env.GITHUB_USERNAME;
+  const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
   const path = process.env.GITHUB_PATH;
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
 
   try {
-    // 2. Fetch from GitHub
-    //    We pass the token in the Authorization header.
     const res = await fetch(url, {
       headers: {
-        Authorization: `token ${process.env.GITHUB_TOKEN}`, // from .env.local
-        Accept: 'application/vnd.github.v3.raw', 
+        Authorization: `token ${process.env.GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github.v3.raw',
       },
     });
-
-    // If we use 'application/vnd.github.v3.raw',
-    // GitHub returns the *raw file contents* instead of a JSON object with base64.
-    // Alternatively, you can fetch the JSON and base64-decode it yourself.
-    // e.g. Accept: 'application/vnd.github.v3+json' 
-    // and then parse the "content" field.
 
     if (!res.ok) {
       throw new Error(`GitHub fetch failed with status ${res.status}`);
     }
 
-    // 3. Get the raw CSV text
     const csvText = await res.text();
-
-    // 4. Parse CSV into JSON
-    //    Papa.parse returns an object with { data, errors, meta }
     const parseResult = Papa.parse(csvText, { header: true });
-    const csvData = parseResult.data; // This should be an array of objects
+    const csvData = parseResult.data;
 
-    // 5. Return props to the page
     return {
       props: {
-        csvData,
+        initialCsvData: csvData,
+        initialCsvRaw: csvText,
       },
     };
   } catch (err) {
-    console.error('Failed to fetch/parse CSV from GitHub:', err);
+    console.error('Failed to fetch CSV from GitHub:', err);
     return {
       props: {
-        csvData: [],
+        initialCsvData: [],
+        initialCsvRaw: '',
       },
     };
   }
