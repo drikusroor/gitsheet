@@ -1,7 +1,37 @@
 // pages/prs/[id].js
 import React from 'react';
 import { Octokit } from '@octokit/rest';
+import dynamic from 'next/dynamic';
 import '@/styles/globals.css';
+
+const ReactDiffViewer = dynamic(() => import('react-diff-viewer'), {
+  ssr: false
+});
+
+// Helper function to parse git patch into old and new content
+function parsePatch(patch: string) {
+  // Normalize line endings to \n
+  const normalizedPatch = patch.replace(/\r\n/g, '\n');
+  const lines = normalizedPatch.split('\n');
+  const oldContent: string[] = [];
+  const newContent: string[] = [];
+
+  lines.forEach(line => {
+    if (line.startsWith('-')) {
+      oldContent.push(line.substring(1));
+    } else if (line.startsWith('+')) {
+      newContent.push(line.substring(1));
+    } else {
+      oldContent.push(line);
+      newContent.push(line);
+    }
+  });
+
+  return {
+    oldContent: oldContent.join('\n'),
+    newValue: newContent.join('\n')
+  };
+}
 
 export default function PrDetails({ prNumber, prData, files }) {
   if (!prData) {
@@ -26,9 +56,22 @@ export default function PrDetails({ prNumber, prData, files }) {
           <div key={file.filename} className="mb-6">
             <h3 className="text-lg font-medium mb-2 text-gray-700">{file.filename}</h3>
             {file.patch ? (
-              <pre className="bg-gray-50 rounded-lg p-4 overflow-x-auto text-sm">
-                {file.patch}
-              </pre>
+              <div className="overflow-x-auto">
+                <ReactDiffViewer
+                  oldValue={parsePatch(file.patch).oldContent}
+                  newValue={parsePatch(file.patch).newValue}
+                  splitView={true}
+                  useDarkTheme={false}
+                  hideLineNumbers={false}
+                  extraLinesSurroundingDiff={3}
+                  styles={{
+                    contentText: {
+                      fontSize: '0.875rem',
+                      fontFamily: 'ui-monospace, monospace'
+                    }
+                  }}
+                />
+              </div>
             ) : (
               <p className="text-gray-600">No patch info (binary or something else).</p>
             )}
