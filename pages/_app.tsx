@@ -1,5 +1,6 @@
 import TabLayout from '@/components/TabLayout';
 import PageLayout from '@/components/PageLayout';
+import Header from '@/components/Header';
 import { AuthProvider, useAuth } from '@/components/AuthProvider';
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
@@ -14,7 +15,7 @@ function LoadingSpinner() {
 }
 
 function AppContent({ Component, pageProps }: AppProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, userName } = useAuth();
   const router = useRouter();
   const isLoginPage = router.pathname === '/login';
 
@@ -27,9 +28,12 @@ function AppContent({ Component, pageProps }: AppProps) {
       {isLoginPage ? (
         <Component {...pageProps} />
       ) : isAuthenticated ? (
-        <TabLayout>
-          <Component {...pageProps} />
-        </TabLayout>
+        <>
+          <Header />
+          <TabLayout>
+            <Component {...pageProps} />
+          </TabLayout>
+        </>
       ) : null}
     </PageLayout>
   );
