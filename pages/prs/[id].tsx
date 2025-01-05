@@ -1,25 +1,26 @@
 // pages/prs/[id].js
-import React from 'react';
-import { Octokit } from '@octokit/rest';
-import dynamic from 'next/dynamic';
-import '@/styles/globals.css';
+import React from "react";
+import { Octokit } from "@octokit/rest";
+import dynamic from "next/dynamic";
+import { RenderMarkdown } from "@/components/RenderMarkdown";
+import "@/styles/globals.css";
 
-const ReactDiffViewer = dynamic(() => import('react-diff-viewer'), {
-  ssr: false
+const ReactDiffViewer = dynamic(() => import("react-diff-viewer"), {
+  ssr: false,
 });
 
 // Helper function to parse git patch into old and new content
 function parsePatch(patch: string) {
   // Normalize line endings to \n
-  const normalizedPatch = patch.replace(/\r\n/g, '\n');
-  const lines = normalizedPatch.split('\n');
+  const normalizedPatch = patch.replace(/\r\n/g, "\n");
+  const lines = normalizedPatch.split("\n");
   const oldContent: string[] = [];
   const newContent: string[] = [];
 
-  lines.forEach(line => {
-    if (line.startsWith('-')) {
+  lines.forEach((line) => {
+    if (line.startsWith("-")) {
       oldContent.push(line.substring(1));
-    } else if (line.startsWith('+')) {
+    } else if (line.startsWith("+")) {
       newContent.push(line.substring(1));
     } else {
       oldContent.push(line);
@@ -28,8 +29,8 @@ function parsePatch(patch: string) {
   });
 
   return {
-    oldContent: oldContent.join('\n'),
-    newValue: newContent.join('\n')
+    oldContent: oldContent.join("\n"),
+    newValue: newContent.join("\n"),
   };
 }
 
@@ -37,7 +38,9 @@ export default function PrDetails({ prNumber, prData, files, comments }) {
   if (!prData) {
     return (
       <div className="container mx-auto px-6 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Pull Request #{prNumber}</h1>
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">
+          Pull Request #{prNumber}
+        </h1>
         <p className="text-gray-600">Not found or error fetching.</p>
       </div>
     );
@@ -46,22 +49,37 @@ export default function PrDetails({ prNumber, prData, files, comments }) {
   const githubPrUrl = `https://github.com/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}/pull/${prNumber}`;
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
+
+  const getStatusTitle = (state: string) => {
+    if (state === "open") {
+      return "This pull request is open. This means that the changes are still being reviewed and discussed.";
+    } else {
+      return "This pull request is closed. This means that the changes have been merged or declined.";
+    }
+  }
 
   return (
     <div className="container mx-auto px-6 py-8">
       <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Pull Request #{prData.number}</h1>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-          prData.state === 'open' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'
-        }`}>
+        <h1 className="text-lg font-bold text-gray-600">
+          Pull Request #{prData.number}
+        </h1>
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-medium ${
+            prData.state === "open"
+              ? "bg-green-100 text-green-800"
+              : "bg-purple-100 text-purple-800"
+          }`}
+          title={getStatusTitle(prData.state)}
+        >
           {prData.state}
         </span>
         <a
@@ -74,8 +92,10 @@ export default function PrDetails({ prNumber, prData, files, comments }) {
         </a>
       </div>
 
-      <h2 className="text-xl font-semibold mb-2 text-gray-700">{prData.title}</h2>
-      
+      <h2 className="text-2xl font-semibold mb-2 text-gray-700">
+        {prData.title}
+      </h2>
+
       <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
         <span>by {prData.user?.login}</span>
         <span>Created: {formatDate(prData.created_at)}</span>
@@ -84,14 +104,14 @@ export default function PrDetails({ prNumber, prData, files, comments }) {
 
       {prData.labels.length > 0 && (
         <div className="flex gap-2 mb-4">
-          {prData.labels.map(label => (
+          {prData.labels.map((label) => (
             <span
               key={label.id}
               className="px-2 py-1 rounded text-xs font-medium"
               style={{
                 backgroundColor: `#${label.color}20`,
                 color: `#${label.color}`,
-                border: `1px solid #${label.color}`
+                border: `1px solid #${label.color}`,
               }}
             >
               {label.name}
@@ -100,15 +120,17 @@ export default function PrDetails({ prNumber, prData, files, comments }) {
         </div>
       )}
 
-      <div className="prose max-w-none mb-8">
-        {prData.body}
+      <div className="border rounded border-gray-200 p-3">
+        <RenderMarkdown content={prData.body || ""} />
       </div>
 
       <div className="border-t border-gray-200 pt-6">
         <h2 className="text-xl font-bold mb-4 text-gray-800">Changed Files</h2>
         {files.map((file) => (
           <div key={file.filename} className="mb-6">
-            <h3 className="text-lg font-medium mb-2 text-gray-700">{file.filename}</h3>
+            <h3 className="text-lg font-medium mb-2 text-gray-700">
+              {file.filename}
+            </h3>
             {file.patch ? (
               <div className="overflow-x-auto">
                 <ReactDiffViewer
@@ -120,14 +142,16 @@ export default function PrDetails({ prNumber, prData, files, comments }) {
                   extraLinesSurroundingDiff={3}
                   styles={{
                     contentText: {
-                      fontSize: '0.875rem',
-                      fontFamily: 'ui-monospace, monospace'
-                    }
+                      fontSize: "0.875rem",
+                      fontFamily: "ui-monospace, monospace",
+                    },
                   }}
                 />
               </div>
             ) : (
-              <p className="text-gray-600">No patch info (binary or something else).</p>
+              <p className="text-gray-600">
+                No patch info (binary or something else).
+              </p>
             )}
           </div>
         ))}
@@ -137,17 +161,17 @@ export default function PrDetails({ prNumber, prData, files, comments }) {
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4 text-gray-800">Comments</h2>
           <div className="space-y-4">
-            {comments.map(comment => (
+            {comments.map((comment) => (
               <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium text-gray-800">{comment.user.login}</span>
+                  <span className="font-medium text-gray-800">
+                    {comment.user.login}
+                  </span>
                   <span className="text-sm text-gray-600">
                     {formatDate(comment.created_at)}
                   </span>
                 </div>
-                <div className="prose max-w-none">
-                  {comment.body}
-                </div>
+                <RenderMarkdown content={comment.body} />
               </div>
             ))}
           </div>
@@ -190,7 +214,7 @@ export async function getServerSideProps(context) {
         repo,
         issue_number: prNumber,
         per_page: 100,
-      })
+      }),
     ]);
 
     return {
@@ -202,7 +226,7 @@ export async function getServerSideProps(context) {
       },
     };
   } catch (error) {
-    console.error('Error fetching PR details:', error);
+    console.error("Error fetching PR details:", error);
     return {
       props: {
         prNumber,

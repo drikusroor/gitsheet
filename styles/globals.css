@@ -46,3 +46,12 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.markdown-content a {
+  color: #2563eb; /* blue-600 */
+  text-decoration: underline;
+}
+
+.markdown-content a:hover {
+  color: #1d4ed8; /* blue-700 */
+}
