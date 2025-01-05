@@ -91,11 +91,15 @@ export default function Home({ initialCsvData, initialCsvRaw }) {
   );
 }
 
-export async function getServerSideProps() {
+// Fetch CSV data from GitHub, get the filename from url params
+export async function getServerSideProps(context) {
   const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
   const path = process.env.GITHUB_PATH;
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+  // get filename from url params
+  const filename = context.query.filename;
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}/${filename}`;
 
   try {
     const res = await fetch(url, {

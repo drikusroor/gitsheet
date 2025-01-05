@@ -39,7 +39,7 @@ Store the PAT in the `.env.local` file as shown below:
 GITHUB_TOKEN=your_github_pat
 GITHUB_OWNER=your_github_username
 GITHUB_REPO=your_repository_name
-GITHUB_PATH=path/to/your/csvfile.csv
+GITHUB_PATH=path/to/your/data/directory
 ```
 
 ## Learn More

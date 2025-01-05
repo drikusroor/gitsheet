@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 
 const tabs = [
-  { id: 'grid', label: 'Current State', path: '/' },
+  { id: 'grid', label: 'Files', path: '/' },
   { id: 'prs', label: 'Pull Requests', path: '/prs' },
 ];
 
