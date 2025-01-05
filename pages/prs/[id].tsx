@@ -104,29 +104,8 @@ export default function PrDetails({ prNumber, prData, files, comments }) {
         {prData.body}
       </div>
 
-      {comments?.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Comments</h2>
-          <div className="space-y-4">
-            {comments.map(comment => (
-              <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium text-gray-800">{comment.user.login}</span>
-                  <span className="text-sm text-gray-600">
-                    {formatDate(comment.created_at)}
-                  </span>
-                </div>
-                <div className="prose max-w-none">
-                  {comment.body}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="border-t border-gray-200 pt-6">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Changed Files</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Changed Files</h2>
         {files.map((file) => (
           <div key={file.filename} className="mb-6">
             <h3 className="text-lg font-medium mb-2 text-gray-700">{file.filename}</h3>
@@ -153,6 +132,27 @@ export default function PrDetails({ prNumber, prData, files, comments }) {
           </div>
         ))}
       </div>
+
+      {comments?.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">Comments</h2>
+          <div className="space-y-4">
+            {comments.map(comment => (
+              <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-medium text-gray-800">{comment.user.login}</span>
+                  <span className="text-sm text-gray-600">
+                    {formatDate(comment.created_at)}
+                  </span>
+                </div>
+                <div className="prose max-w-none">
+                  {comment.body}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
