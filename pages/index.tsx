@@ -1,33 +1,35 @@
-// pages/prs/index.js
-import React from 'react';
-import { Octokit } from '@octokit/rest';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import '@/styles/globals.css';
+import { Octokit } from '@octokit/rest';
 
-export default function PrList({ openPRs }) {
+export default function Home({ files, error }) {
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
+
   return (
     <div className="container mx-auto px-6 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Open Pull Requests</h1>
-      {openPRs.length === 0 && <p className="text-gray-600">No open PRs found.</p>}
-
-      <ul className="space-y-4">
-        {openPRs.map((pr) => (
-          <li key={pr.number} className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-            <a href={`/prs/${pr.number}`} className="block">
-              <div className="flex items-center space-x-2">
-                <span className="text-blue-500 font-mono">#{pr.number}</span>
-                <span className="font-medium text-gray-800">{pr.title}</span>
-              </div>
-              <div className="mt-2 text-sm text-gray-600">
-                by {pr.user.login}
-              </div>
-            </a>
-          </li>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">CSV Files</h1>
+      <div className="space-y-2">
+        {files.map((file) => (
+          <div key={file}>
+            <Link 
+              href={`/edit?filename=${encodeURIComponent(file)}`}
+              className="text-blue-500 hover:underline"
+            >
+              {file}
+            </Link>
+          </div>
         ))}
-      </ul>
+        {files.length === 0 && <p className="text-gray-600">No CSV files found.</p>}
+      </div>
     </div>
   );
 }
 
+// get server side props to fetch the list of files in the data directory of the GitHub repository
 export async function getServerSideProps() {
   const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
@@ -36,27 +38,39 @@ export async function getServerSideProps() {
     auth: process.env.GITHUB_TOKEN,
   });
 
+  console.log('owner:', owner, 'repo:', repo);
+
   try {
-    // We want only open PRs
-    const { data: pulls } = await octokit.pulls.list({
+    const { data: contents } = await octokit.repos.getContent({
       owner,
       repo,
-      state: 'open',
-      per_page: 50, // or however many you want
+      path: 'example',
     });
 
-    // We could reduce the data we return, but let's pass everything
+    if (!Array.isArray(contents)) {
+      throw new Error('Expected directory contents but got a file');
+    }
+
+    console.log('contents:', contents);
+
+    const csvFiles = contents
+      .filter(file => file.type === 'file' && file.name.endsWith('.csv'))
+      .map(file => file.name);
+
     return {
       props: {
-        openPRs: pulls,
-      },
-    };
-  } catch (error) {
-    console.error('Error fetching pull requests:', error);
-    return {
-      props: {
-        openPRs: [],
+        files: csvFiles,
       },
     };
   }
+  catch (error) {
+    console.error('Error fetching files:', error);
+    return {
+      props: {
+        files: [],
+        error: 'Failed to fetch files from GitHub',
+      },
+    };
+  }
+
 }
