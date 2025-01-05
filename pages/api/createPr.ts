@@ -1,6 +1,8 @@
 // pages/api/createPr.js
 
 import { Octokit } from '@octokit/rest';
+import jwt from 'jsonwebtoken';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 /*
   We'll use @octokit/rest for convenience, but you could use fetch() with the GitHub REST API.
@@ -8,9 +10,20 @@ import { Octokit } from '@octokit/rest';
     npm install @octokit/rest
 */
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Get user name from JWT token
+  const token = req.cookies.auth_token;
+  let userName = 'Anonymous';
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as { name: string };
+    userName = decoded.name;
+  } catch (error) {
+    console.error('Failed to decode JWT:', error);
   }
 
   const { filename, updatedCsvText } = req.body as { filename: string; updatedCsvText: string };
@@ -93,9 +106,17 @@ export default async function handler(req, res) {
       sha: fileSha, // if file already existed on that branch
     });
 
-    // 4. Create a Pull Request
-    const prTitle = `Automated CSV Update (${filename})`;
-    const prBody = 'This PR was created automatically by the CSV editor.';
+    // 4. Create a Pull Request with user attribution
+    const timestamp = new Date().toISOString();
+    const prTitle = `Update ${filename} by ${userName}`;
+    const prBody = `## CSV Update
+    
+**Modified by:** ${userName}
+**File:** ${filename}
+**Timestamp:** ${timestamp}
+
+This PR was created automatically through the CSV editor.`;
+
     const { data: prData } = await octokit.pulls.create({
       owner,
       repo,
