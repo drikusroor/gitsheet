@@ -1,15 +1,20 @@
-import React from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
+import React from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 const tabs = [
-  { id: 'grid', label: 'Files', path: '/' },
-  { id: 'prs', label: 'Pull Requests', path: '/prs' },
+  { id: "grid", label: "Files", path: "/" },
+  { id: "prs", label: "Pull Requests", path: "/prs" },
 ];
 
 export default function TabLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const currentPath = router.pathname;
+
+  // Check if the current tab is active by checking whether the current path includes the tab path
+  // Except for the home tab, we need to check if the current path is exactly '/'
+  const isActiveTab = (tabPath: string) =>
+    tabPath === "/" ? currentPath === tabPath : currentPath.includes(tabPath);
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -21,9 +26,10 @@ export default function TabLayout({ children }: { children: React.ReactNode }) {
               href={tab.path}
               className={`
                 py-4 px-1 border-b-2 font-medium text-sm
-                ${currentPath === tab.path
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ${
+                  isActiveTab(tab.path)
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }
               `}
             >
