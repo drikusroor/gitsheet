@@ -14,6 +14,14 @@ export default function Home({ files, error }: HomeProps) {
     return <div className="text-red-500">Error: {error}</div>;
   }
 
+  if (!files) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return <FileViewer files={files} error={error} />;
 }
 
@@ -35,8 +43,6 @@ export async function getServerSideProps() {
     if (!Array.isArray(contents)) {
       throw new Error("Expected directory contents but got a file");
     }
-
-    console.log("Directory contents:", contents);
 
     // Include more file information
     const files = contents

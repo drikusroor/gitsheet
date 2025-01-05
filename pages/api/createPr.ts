@@ -1,7 +1,6 @@
 // pages/api/createPr.js
 
 import { Octokit } from '@octokit/rest';
-import Papa from 'papaparse';
 
 /*
   We'll use @octokit/rest for convenience, but you could use fetch() with the GitHub REST API.
@@ -15,7 +14,6 @@ export default async function handler(req, res) {
   }
 
   const { filename, updatedCsvText } = req.body as { filename: string; updatedCsvText: string };
-  console.log('Creating PR for:', filename);
 
   if (!filename) {
     return res.status(400).json({ error: 'No filename provided' });
