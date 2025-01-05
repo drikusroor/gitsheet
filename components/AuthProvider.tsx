@@ -1,6 +1,4 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import jwt from 'jsonwebtoken';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -23,20 +21,11 @@ export function AuthProvider({ children }) {
     const checkAuth = async () => {
       try {
         const res = await fetch('/api/auth/check');
+        const data = await res.json();
+        
         if (res.ok) {
-          // Get token from cookies
-          const token = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('auth_token='))
-            ?.split('=')[1];
-
-          if (token) {
-            // Decode JWT to get user name
-            const decoded = jwt.decode(token) as { name: string };
-            console.log('Decoded JWT:', decoded); // Debug log
-            setUserName(decoded?.name || null);
-          }
           setIsAuthenticated(true);
+          setUserName(data.userName);
         } else {
           setIsAuthenticated(false);
           setUserName(null);

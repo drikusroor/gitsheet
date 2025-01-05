@@ -9,12 +9,13 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
+    // Verify and decode the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as { name: string };
-    return res.status(200).json({ 
-      message: 'Authenticated',
-      userName: decoded.name
-    });
+    const userName = decoded.name;
+
+    // Use userName in your API logic
+    res.status(200).json({ message: `Hello, ${userName}!` });
   } catch {
-    return res.status(401).json({ message: 'Invalid token' });
+    res.status(401).json({ message: 'Invalid token' });
   }
 }
