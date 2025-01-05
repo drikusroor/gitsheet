@@ -38,8 +38,6 @@ export async function getServerSideProps() {
     auth: process.env.GITHUB_TOKEN,
   });
 
-  console.log('owner:', owner, 'repo:', repo);
-
   try {
     const { data: contents } = await octokit.repos.getContent({
       owner,
@@ -50,8 +48,6 @@ export async function getServerSideProps() {
     if (!Array.isArray(contents)) {
       throw new Error('Expected directory contents but got a file');
     }
-
-    console.log('contents:', contents);
 
     const csvFiles = contents
       .filter(file => file.type === 'file' && file.name.endsWith('.csv'))
