@@ -14,7 +14,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { updatedCsvText } = req.body;
+  const { filename, updatedCsvText } = req.body as { filename: string; updatedCsvText: string };
+  console.log('Creating PR for:', filename);
+
+  if (!filename) {
+    return res.status(400).json({ error: 'No filename provided' });
+  }
+
   if (!updatedCsvText) {
     return res.status(400).json({ error: 'No CSV text provided' });
   }
@@ -23,7 +29,8 @@ export default async function handler(req, res) {
     const owner = process.env.GITHUB_OWNER;
     const repo = process.env.GITHUB_REPO;
     const defaultBranch = process.env.GITHUB_DEFAULT_BRANCH || 'main';
-    const path = process.env.GITHUB_PATH;
+    const folderPath = process.env.GITHUB_PATH;
+    const path = folderPath ? `${folderPath}/${filename}` : filename;
 
     // Initialize Octokit
     const octokit = new Octokit({
@@ -89,7 +96,7 @@ export default async function handler(req, res) {
     });
 
     // 4. Create a Pull Request
-    const prTitle = 'Automated CSV Update';
+    const prTitle = `Automated CSV Update (${filename})`;
     const prBody = 'This PR was created automatically by the CSV editor.';
     const { data: prData } = await octokit.pulls.create({
       owner,

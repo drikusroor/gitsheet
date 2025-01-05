@@ -1,24 +1,19 @@
 // pages/index.js
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import Papa from 'papaparse';
 import '@/styles/globals.css';
 import GenericDataGrid from '@/components/GenericDataGrid';
+import { redirect } from 'next/navigation';
 
-export default function Home({ initialCsvData, initialCsvRaw }) {
-  // initialCsvData is array of objects from Papa.parse
-  // initialCsvRaw is the raw CSV text from GitHub (used if we need the original for diff or something else)
+interface HomeProps {
+  initialCsvData: any[];
+  initialCsvRaw: string;
+  filename: string;
+}
+
+export default function Home({ initialCsvData, initialCsvRaw, filename }: HomeProps) {
 
   const [tableData, setTableData] = useState(initialCsvData);
-
-  // Handler for editing a cell
-  const handleCellChange = (rowIndex, key, newValue) => {
-    setTableData((prevData) => {
-      const newData = [...prevData];
-      newData[rowIndex] = { ...newData[rowIndex], [key]: newValue };
-      return newData;
-    });
-  };
-
   // Convert our tableData (array of objects) back to CSV
   const generateCsvText = () => {
     const unparseConfig = { header: true };
@@ -26,7 +21,7 @@ export default function Home({ initialCsvData, initialCsvRaw }) {
   };
 
   // Submit changes to create a PR
-  const submitChanges = async () => {
+  const submitChanges = useCallback(async () => {
     try {
       const updatedCsvText = generateCsvText();
       const response = await fetch('/api/createPr', {
@@ -34,11 +29,16 @@ export default function Home({ initialCsvData, initialCsvRaw }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ updatedCsvText }),
+        body: JSON.stringify({ filename, updatedCsvText }),
       });
       const result = await response.json();
       if (response.ok) {
         alert(`PR created: ${result.pullRequestUrl}`);
+
+        // redirect user to PR page
+        const prNumber = result.pullRequestNumber;
+        redirect(`/prs/${prNumber}`);
+
       } else {
         alert(`Error creating PR: ${result.error || 'Unknown error'}`);
       }
@@ -46,7 +46,7 @@ export default function Home({ initialCsvData, initialCsvRaw }) {
       console.error(err);
       alert('Failed to create PR. See console for details.');
     }
-  };
+  }, [filename, tableData]);
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -73,6 +73,7 @@ export async function getServerSideProps(context) {
 
   // get filename from url params
   const filename = context.query.filename;
+
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}/${filename}`;
 
   try {
@@ -95,6 +96,7 @@ export async function getServerSideProps(context) {
       props: {
         initialCsvData: csvData,
         initialCsvRaw: csvText,
+        filename,
       },
     };
   } catch (err) {
@@ -103,6 +105,7 @@ export async function getServerSideProps(context) {
       props: {
         initialCsvData: [],
         initialCsvRaw: '',
+        filename,
       },
     };
   }
