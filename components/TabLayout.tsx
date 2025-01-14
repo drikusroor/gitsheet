@@ -5,6 +5,7 @@ import Link from "next/link";
 const tabs = [
   { id: "grid", label: "Files", path: "/" },
   { id: "prs", label: "Pull Requests", path: "/prs" },
+  { id: "issues", label: "Issues", path: "/issues" },
 ];
 
 export default function TabLayout({ children }: { children: React.ReactNode }) {
