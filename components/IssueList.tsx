@@ -4,6 +4,7 @@ import Link from 'next/link';
 interface Issue {
   number: number;
   title: string;
+  labels: { name: string }[];
 }
 
 interface IssueListProps {
@@ -23,6 +24,13 @@ const IssueList: React.FC<IssueListProps> = ({ issues }) => {
               <div className="flex items-center space-x-2">
                 <span className="text-blue-500 font-mono">#{issue.number}</span>
                 <span className="font-medium text-gray-800">{issue.title}</span>
+              </div>
+              <div className="mt-2">
+                {issue.labels.map((label) => (
+                  <span key={label.name} className="inline-block bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded-full mr-2">
+                    {label.name}
+                  </span>
+                ))}
               </div>
             </Link>
           </li>

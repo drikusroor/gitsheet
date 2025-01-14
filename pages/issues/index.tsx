@@ -19,11 +19,13 @@ export async function getServerSideProps() {
       throw new Error('GitHub configuration is missing');
     }
 
-    const { data: issues } = await octokit.issues.listForRepo({
+    let { data: issues } = await octokit.issues.listForRepo({
       owner,
       repo,
       state: 'open',
     });
+
+    issues = issues.filter((issue) => !issue.pull_request);
 
     return {
       props: {
