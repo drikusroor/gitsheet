@@ -29,6 +29,7 @@ To use Gitsheet, you need to create a GitHub Personal Access Token (PAT) with th
 - `workflow`: Update GitHub Action workflows (if you plan to trigger workflows)
 - `user`: Read and write user profile data (optional, if you need to access user information)
 - `commit statuses`: Read and write
+- `issues`: Read and write
 - `contents`: Read and write
 - `metadata`: Read-only
 - `pull requests`: Read and write
