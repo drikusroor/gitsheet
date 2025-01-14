@@ -42,6 +42,32 @@ GITHUB_REPO=your_repository_name
 GITHUB_PATH=path/to/your/data/directory
 ```
 
+## Environment Variables
+
+### MAGIC_TOKEN
+
+The `MAGIC_TOKEN` environment variable is used for authentication purposes. It should be set to a secret token that is used to validate login requests. Store the `MAGIC_TOKEN` in the `.env.local` file as shown below:
+
+```env
+MAGIC_TOKEN=your_magic_token
+```
+
+### JWT_SECRET
+
+The `JWT_SECRET` environment variable is used to sign and verify JSON Web Tokens (JWTs) for authentication. It should be set to a secret key that is used to sign the JWTs. Store the `JWT_SECRET` in the `.env.local` file as shown below:
+
+```env
+JWT_SECRET=your_jwt_secret
+```
+
+## Example Environment File
+
+An example environment file `.env.example` is provided in the repository. You can use this file as a template for your own environment variables. Copy the `.env.example` file to `.env.local` to get started:
+
+```bash
+cp .env.example .env.local
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
