@@ -18,11 +18,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('GitHub configuration is missing');
     }
 
-    const { data: issues } = await octokit.issues.listForRepo({
+    let { data: issues } = await octokit.issues.listForRepo({
       owner,
       repo,
       state: 'open',
     });
+
+    issues = issues.filter((issue) => !issue.pull_request);
 
     res.status(200).json({ issues });
   } catch (error) {
